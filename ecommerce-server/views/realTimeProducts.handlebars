@@ -1,0 +1,33 @@
+<form id="productForm">
+    <input type="text" id="title" placeholder="Título del producto" required>
+    <input type="number" id="price" placeholder="Precio" required>
+    <textarea id="description" placeholder="Descripción"></textarea>
+    <button type="submit">Crear Producto</button>
+</form>
+
+<script>
+    const socket = io('http://localhost:8080');
+
+    socket.on('newProduct', (product) => {
+        console.log('Nuevo producto recibido:', product);
+    });
+
+    const form = document.getElementById('productForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const newProduct = {
+            title: document.getElementById('title').value,
+            price: document.getElementById('price').value,
+            description: document.getElementById('description').value,
+        };
+
+        const response = await fetch('/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newProduct),
+        });
+
+        const product = await response.json();
+    });
+</script>

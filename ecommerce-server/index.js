@@ -1,14 +1,20 @@
 const express = require('express');
-const productRouter = require('./routes/products');
-const cartRouter = require('./routes/carts');
+const http = require('http');
+const socketIo = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
 app.use(express.json());
 
-app.use('/products', productRouter);
-app.use('/carts', cartRouter);
+app.post('/products', (req, res) => {
+    const { title, price, description } = req.body;
+    const newProduct = { id: Date.now(), title, price, description };
+    io.emit('newProduct', newProduct);
+    res.status(201).json(newProduct);
+});
 
-const PORT = 8080;
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
+server.listen(8080, () => {
+    console.log('Servidor corriendo en el puerto 8080');
 });
