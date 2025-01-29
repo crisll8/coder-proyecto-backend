@@ -1,33 +1,15 @@
-<form id="productForm">
-    <input type="text" id="title" placeholder="Título del producto" required>
+<h1>Productos en Tiempo Real</h1>
+<ul id="product-list">
+    {{#each products}}
+        <li data-id="{{this.id}}">{{this.title}} - Precio: {{this.price}} <button onclick="deleteProduct({{this.id}})">Eliminar</button></li>
+    {{/each}}
+</ul>
+
+<form id="product-form">
+    <input type="text" id="title" placeholder="Título" required>
     <input type="number" id="price" placeholder="Precio" required>
-    <textarea id="description" placeholder="Descripción"></textarea>
-    <button type="submit">Crear Producto</button>
+    <button type="submit">Agregar Producto</button>
 </form>
 
-<script>
-    const socket = io('http://localhost:8080');
-
-    socket.on('newProduct', (product) => {
-        console.log('Nuevo producto recibido:', product);
-    });
-
-    const form = document.getElementById('productForm');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const newProduct = {
-            title: document.getElementById('title').value,
-            price: document.getElementById('price').value,
-            description: document.getElementById('description').value,
-        };
-
-        const response = await fetch('/products', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newProduct),
-        });
-
-        const product = await response.json();
-    });
-</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realTimeProducts.js"></script>
