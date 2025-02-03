@@ -1,25 +1,17 @@
-const socket = io();
+const socket = io(); // Establecer la conexión con el servidor WebSocket
 
-document.getElementById('product-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const title = document.getElementById('title').value;
-    const price = document.getElementById('price').value;
-    
-    socket.emit('addProduct', { title, price });
-    document.getElementById('title').value = '';
-    document.getElementById('price').value = '';
-});
-
+// Evento para actualizar los productos en tiempo real
 socket.on('updateProducts', (products) => {
-    const productList = document.getElementById('product-list');
-    productList.innerHTML = '';
-    products.forEach(product => {
-        const li = document.createElement('li');
-        li.innerHTML = `${product.title} - Precio: ${product.price} <button onclick="deleteProduct(${product.id})">Eliminar</button>`;
-        productList.appendChild(li);
-    });
-});
+  const productsContainer = document.getElementById('productsContainer');
+  productsContainer.innerHTML = ''; // Limpiar el contenedor
 
-function deleteProduct(id) {
-    socket.emit('deleteProduct', id);
-}
+  products.forEach((product) => {
+    const productElement = document.createElement('div');
+    productElement.innerHTML = `
+      <h3>${product.name}</h3>
+      <p>${product.price}</p>
+      <img src="/images/${product.image}" alt="${product.name}" />
+    `;
+    productsContainer.appendChild(productElement);
+  });
+});

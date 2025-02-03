@@ -1,37 +1,19 @@
 const express = require('express');
 const path = require('path');
-const hbs = require('express-handlebars').create();  
+const { engine } = require('express-handlebars');
 const dotenv = require('dotenv');
-const socketIo = require('socket.io');
-const http = require('http');
+
+const viewsRouter = require('./routes/views'); // Importar views.js
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
-
 dotenv.config();
 
-app.engine('handlebars', hbs.engine); 
+app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, '../views'));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
-const viewsRouter = require(path.join(__dirname, 'src', 'routes', 'views'));
-const productsRouter = require('./routes/products');
-const cartsRouter = require('./routes/carts');
+app.use('/', viewsRouter); // Usar el router de vistas
 
-app.use('/', viewsRouter);
-app.use('/products', productsRouter);
-app.use('/carts', cartsRouter);
-
-const port = process.env.PORT || 8080;
-server.listen(port, () => {
-  console.log(`Servidor escuchando en el puerto ${port}`);
-});
-
-io.on('connection', (socket) => {
-  console.log('Nuevo cliente conectado');
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectado');
-  });
-});
+module.exports = app;

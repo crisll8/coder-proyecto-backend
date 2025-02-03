@@ -1,25 +1,29 @@
+const io = require('socket.io')(server);
 const fs = require('fs');
 const path = require('path');
 
-const productsFilePath = path.join(__dirname, '../data/products.json');
+// Emitir productos en tiempo real
+function emitProducts() {
+  const productsPath = path.join(__dirname, '../data/products.json');
+  fs.readFile(productsPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error al leer los productos:', err);
+      return;
+    }
 
-module.exports = (io) => {
-    io.on('connection', (socket) => {
-        console.log('Nuevo cliente conectado');
+    const products = JSON.parse(data);
+    io.emit('updateProducts', products); // Emitir los productos a todos los clientes conectados
+  });
+}
 
-        socket.on('addProduct', (product) => {
-            let products = JSON.parse(fs.readFileSync(productsFilePath, 'utf8'));
-            product.id = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
-            products.push(product);
-            fs.writeFileSync(productsFilePath, JSON.stringify(products, null, 2));
-            io.emit('updateProducts', products);
-        });
+// Configurar WebSocket
+io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado');
+  
+  // Emitir productos al conectar el cliente
+  emitProducts();
 
-        socket.on('deleteProduct', (id) => {
-            let products = JSON.parse(fs.readFileSync(productsFilePath, 'utf8'));
-            products = products.filter(p => p.id !== id);
-            fs.writeFileSync(productsFilePath, JSON.stringify(products, null, 2));
-            io.emit('updateProducts', products);
-        });
-    });
-};
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado');
+  });
+});
